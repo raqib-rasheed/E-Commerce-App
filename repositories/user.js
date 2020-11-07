@@ -1,5 +1,9 @@
 const fs = require('fs');
 const crypto = require('crypto');
+const util = require('util');
+
+const script = util.promisify(crypto.script);
+
 class UsersRepository {
     constructor(filename){
         if(!filename){
@@ -21,15 +25,35 @@ class UsersRepository {
             })
         );
     }
-    //attrs=attributes of the user's object
-    async create(attrs){
-        //to add an id to all the attributes
-        attrs.id = this.randomId();
-        //to add a new user
-        const records = await this.getAll();
-        records.push(attrs);
-        //write the updated 'records' array  back to this.filename;
+
+    async comparePasswords(saved,supplied){
+        //saved  -> password which is saved in database. eg: "hashed.salt"
+        //supplied -> password which given to us by trying to sign in.        
+        const result = saved.split('.');
+        const hashed =result[0];
+        const salt = result[1];
+        //can be also wwritten as with short hand method
+                 //const [hashed,salt] = saved.split(".");
+        const hashedSuppliedbuf = await script(supplied,salt,64);
+
+        return hashed === hashedSuppliedbuf;
+
+    }
+    async create(attrs){      //attrs= { email:'' , password:''}
+        attrs.id = this.randomId();     //to add an id to all the attributes
+        
+        const salt = crypto.randomBytes(8).toString('hex');
+        const buffer =await scrypt(attrs.password,salt,64);
+        
+        const records = await this.getAll();        //to add a new user
+        const record = {
+            ...attrs,
+            password:`${buffer.toString('hex')}.${salt}`
+            }
+        records.push(record);       //write the updated 'records' array  back to this.filename;
         await this.writeAll(records);
+
+        return   record; 
     }
     async writeAll(records){
         await fs.promises.writeFile(

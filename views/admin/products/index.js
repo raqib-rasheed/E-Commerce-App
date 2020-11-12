@@ -8,15 +8,17 @@ module.exports = ({ products }) => {
         <td>${product.title}</td>
         <td>${product.price}</td>
         <td>
-          <a href="/admin/products/${product.id}/edit">
+          <a href="">
             <button class="button is-link">
               Edit
             </button>
           </a>
         </td>
         <td>
-          <button class="button is-danger">Delete</button>
-        </td>
+        <form method="POST" action="/admin/products/${product.id}/delete">
+          <button class="button is-danger" href="">Delete</button>
+        </form>
+          </td>
       </tr>
     `;
     })
@@ -44,4 +46,3 @@ module.exports = ({ products }) => {
     `
   });
 };
-

@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { handleErrors, reuireAuth } = require('./middlewares');
+const { handleErrors } = require('./middlewares');
 const usersRepo = require('../../repositories/users');
 const signupTemplate = require('../../views/admin/auth/signup');
 const signinTemplate = require('../../views/admin/auth/signin');
@@ -55,4 +55,5 @@ router.post(
     res.redirect('/admin/products');
   }
 );
+
 module.exports = router;

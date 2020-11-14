@@ -5,7 +5,7 @@ const { handleErrors, requireAuth } = require('./middlewares');
 const productsRepo = require('../../repositories/products');
 const productsNewTemplate = require('../../views/admin/products/new');
 const productsIndexTemplate = require('../../views/admin/products/index');
-const prductsEditTemplate = require('../../views/admin/products/edit');
+const productsEditTemplate = require('../../views/admin/products/edit');
 const { requireTitle, requirePrice } = require('./validators');
 
 const router = express.Router();
@@ -34,47 +34,46 @@ router.post(
     res.redirect('/admin/products');
   }
 );
-router.get(
-  "/admin/products/:id/edit",
-  requireAuth, 
-  async (req,res) =>{
+
+router.get('/admin/products/:id/edit', requireAuth, async (req, res) => {
   const product = await productsRepo.getOne(req.params.id);
 
-  if(!product) {
-    return res.send('product not found');
+  if (!product) {
+    return res.send('Product not found');
   }
 
-  res.send(prductsEditTemplate({ product }));
-
+  res.send(productsEditTemplate({ product }));
 });
+
 router.post(
-  "/admin/products/:id/edit",
+  '/admin/products/:id/edit',
   requireAuth,
-  upload.single("image"),
+  upload.single('image'),
   [requireTitle, requirePrice],
-  handleErrors(prductsEditTemplate, async (req) =>{
+  handleErrors(productsEditTemplate, async req => {
     const product = await productsRepo.getOne(req.params.id);
     return { product };
   }),
-  async (req,res) =>{
+  async (req, res) => {
     const changes = req.body;
-    
-    console.log("clicked!!!");
-    if(req.file){
+
+    if (req.file) {
       changes.image = req.file.buffer.toString('base64');
     }
-    try{
+
+    try {
       await productsRepo.update(req.params.id, changes);
-    }catch (err){ 
-      return res.send('could not find item');
+    } catch (err) {
+      return res.send('Could not find item');
     }
 
     res.redirect('/admin/products');
   }
 );
-router.post('/admin/products/:id/delete', requireAuth, async(req,res) =>{
+
+router.post('/admin/products/:id/delete', requireAuth, async (req, res) => {
   await productsRepo.delete(req.params.id);
-  
+
   res.redirect('/admin/products');
 });
 
